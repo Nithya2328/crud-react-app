@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { User } from "../types/user";
 
-const API = "http://localhost:3000/users";
+const API = "/db.json"; // fetch from public folder
 
 export const getUsers = () => axios.get<User[]>(API);
 export const createUser = (data: User) => axios.post(API, data);
