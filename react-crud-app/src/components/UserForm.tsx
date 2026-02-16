@@ -27,7 +27,10 @@ export default function UserForm({ onSubmit, initial }: Props) {
 
     // Required fields
     userFormSchema.forEach((field) => {
-      if (field.required && (!(form as any)[field.name] || (form as any)[field.name].trim() === "")) {
+      if (
+        field.required &&
+        (!(form as any)[field.name] || (form as any)[field.name].trim() === "")
+      ) {
         newErrors[field.name] = `${field.label} is required`;
       }
     });
@@ -44,7 +47,9 @@ export default function UserForm({ onSubmit, initial }: Props) {
 
     onSubmit(form);
 
-    if (!initial) setForm({} as User);
+    // Clear form after submit
+    setForm({} as User);
+    setErrors({});
   };
 
   return (

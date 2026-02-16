@@ -1,3 +1,5 @@
+import React from "react";
+
 interface Props {
   field: any;
   value: string;
@@ -9,11 +11,11 @@ export default function FieldRenderer({ field, value, onChange, error }: Props) 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
 
-    // Numeric only for phone
-    if (field.numeric) val = val.replace(/\D/g, "");
-
-    // Max length
-    if (field.maxLength) val = val.slice(0, field.maxLength);
+    // numeric-only for phone
+    if (field.numeric) {
+      val = val.replace(/\D/g, ""); // remove any non-digit characters
+      val = val.slice(0, 10);       // max 10 digits
+    }
 
     onChange(field.name, val);
   };
