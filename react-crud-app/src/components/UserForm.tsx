@@ -10,45 +10,41 @@ interface Props {
 
 export default function UserForm({ onSubmit, initial }: Props) {
   const [form, setForm] = useState<User>({} as User);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Load initial data for edit
   useEffect(() => {
-    if (initial) {
-      setForm(initial);
-    }
+    if (initial) setForm(initial);
   }, [initial]);
 
   const handleChange = (name: string, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" })); // clear error
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: { [key: string]: string } = {};
 
-    // ✅ Validate required fields
-    const missingFields = userFormSchema
-      .filter((f) => f.required)
-      .filter((f) => !(form as any)[f.name] || (form as any)[f.name].trim() === "");
+    // Required fields
+    userFormSchema.forEach((field) => {
+      if (field.required && (!(form as any)[field.name] || (form as any)[field.name].trim() === "")) {
+        newErrors[field.name] = `${field.label} is required`;
+      }
+    });
 
-    if (missingFields.length > 0) {
-      alert(`Please fill: ${missingFields.map((f) => f.label).join(", ")}`);
+    // Phone validation
+    if ((form as any).phone && (form as any).phone.length !== 10) {
+      newErrors.phone = "Phone number must be 10 digits";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    // ✅ Validate phone number length if numeric
-    const phoneField = userFormSchema.find((f) => f.name === "phone");
-    if (phoneField && (form as any).phone && (form as any).phone.length !== 10) {
-      alert("Phone number must be exactly 10 digits");
-      return;
-    }
-
-    // Submit the form
     onSubmit(form);
 
-    // Reset form if not editing
-    if (!initial) {
-      setForm({} as User);
-    }
+    if (!initial) setForm({} as User);
   };
 
   return (
@@ -59,10 +55,11 @@ export default function UserForm({ onSubmit, initial }: Props) {
           field={field}
           value={(form as any)[field.name]}
           onChange={handleChange}
+          error={errors[field.name]}
         />
       ))}
 
-      <button type="submit" className="btn btn-primary w-100">
+      <button type="submit" className="btn btn-primary w-100 mt-3">
         {initial ? "Update User" : "Save"}
       </button>
     </form>

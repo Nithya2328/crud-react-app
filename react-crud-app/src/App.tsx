@@ -1,37 +1,34 @@
 import { useState } from "react";
 import UserForm from "./components/UserForm";
 import UserList from "./components/UserList";
-import { useUsers } from "./hooks/useUsers";
-import * as api from "./api/userService";
 import type { User } from "./types/user";
 
-export default function App(){
-  const {users,loading,error,fetchUsers}=useUsers();
-  const [editing,setEditing]=useState<User|null>(null);
+export default function App() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [editing, setEditing] = useState<User | null>(null);
 
-  const saveUser= async(data:User)=>{
-    if(editing){
-      await api.updateUser(editing.id!,data);
+  // Save or update a user
+  const saveUser = (data: User) => {
+    if (editing) {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === editing.id ? { ...u, ...data } : u))
+      );
       setEditing(null);
-    }else{
-      await api.createUser(data);
+    } else {
+      setUsers((prev) => [...prev, { ...data, id: Date.now() }]);
     }
-    fetchUsers();
   };
 
-  const removeUser=async(id:number)=>{
-    await api.deleteUser(id);
-    fetchUsers();
+  // Delete a user
+  const removeUser = (id: number) => {
+    setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
-  if(loading) return <p>Loading...</p>;
-  if(error) return <p>{error}</p>;
-
-  return(
-    <div className="container mt-4">
+  return (
+    <div className="container mt-5 d-flex flex-column align-items-center">
       <h2>User Manager</h2>
-      <UserForm onSubmit={saveUser} initial={editing||undefined}/>
-      <UserList users={users} onDelete={removeUser} onEdit={setEditing}/>
+      <UserForm onSubmit={saveUser} initial={editing || undefined} />
+      <UserList users={users} onDelete={removeUser} onEdit={setEditing} />
     </div>
   );
 }
